@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${pageTitle}">Tour Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body>
+<main class="container py-5">
+    <div class="panel admin-form-panel mx-auto">
+        <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+            <div>
+                <span class="eyebrow text-dark">Admin form</span>
+                <h1 class="fw-bold mt-2 mb-1" th:text="${pageTitle}">Tour Form</h1>
+            </div>
+            <a class="btn btn-outline-secondary" th:href="@{/tour/admin}">Back to admin</a>
+        </div>
+
+        <div class="alert alert-warning" th:if="${adminMessage}" th:text="${adminMessage}"></div>
+
+        <form id="tourForm" class="row g-3" th:action="@{/tour/admin/save}" method="post" enctype="multipart/form-data" th:object="${tourForm}">
+            <div class="col-md-3">
+                <label class="form-label">ID</label>
+                <input class="form-control" th:field="*{id}" placeholder="t5">
+            </div>
+            <div class="col-md-9">
+                <label class="form-label">Name</label>
+                <input class="form-control" th:field="*{name}" placeholder="Tour name" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input class="form-control" th:field="*{location}" placeholder="Location" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Price</label>
+                <input class="form-control" type="number" th:field="*{price}" min="0" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Rating</label>
+                <input class="form-control" type="number" step="0.1" min="0" max="5" th:field="*{rating}" required>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label">Image</label>
+                <div class="image-manager"
+                     th:classappend="${tourForm.imageUrl() != null && !tourForm.imageUrl().isBlank() ? 'has-image' : ''}">
+                    <div class="image-preview-card"
+                         th:classappend="${tourForm.imageUrl() == null || tourForm.imageUrl().isBlank() ? 'd-none' : ''}">
+                        <img id="tourImagePreview"
+                             class="upload-preview"
+                             th:src="${tourForm.imageUrl() != null && !tourForm.imageUrl().isBlank() ? tourForm.imageUrl() : ''}"
+                             th:classappend="${tourForm.imageUrl() == null || tourForm.imageUrl().isBlank() ? 'd-none' : ''}"
+                             alt="Tour image preview">
+                        <button class="image-remove"
+                                type="button"
+                                th:classappend="${tourForm.imageUrl() == null || tourForm.imageUrl().isBlank() ? 'd-none' : ''}"
+                                aria-label="Clear image">&times;</button>
+                    </div>
+                    <label class="image-dropzone" for="imageFile">
+                        <span class="upload-empty">
+                            <span class="upload-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" role="img">
+                                    <path d="M12 16V8m0 0-3.2 3.2M12 8l3.2 3.2M20 16.5a4.2 4.2 0 0 0-3.9-5.7A6 6 0 0 0 4.5 12.2 3.8 3.8 0 0 0 5.8 19h12.4a3.1 3.1 0 0 0 1.8-2.5Z"/>
+                                </svg>
+                            </span>
+                            <strong>Upload image</strong>
+                            <span>Drag &amp; drop or click to browse</span>
+                            <small>JPG, PNG up to 5 MB</small>
+                        </span>
+                        <span class="change-image-pill">
+                            <svg viewBox="0 0 24 24" role="img">
+                                <path d="M4 5h16v14H4zM8 13l2.4-2.4 3.8 3.8 1.4-1.4L20 17M8 8.5h.01"/>
+                            </svg>
+                            Change image
+                        </span>
+                        <input id="imageFile" name="imageFile" type="file" accept="image/*">
+                    </label>
+                    <input id="imageUrl" type="hidden" th:field="*{imageUrl}">
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label fw-semibold">Tour Description (RichText)</label>
+                <input type="hidden" id="summaryInput" th:field="*{summary}" required>
+                <div class="quill-wrapper">
+                    <div id="quillToolbar">
+                        <span class="ql-formats">
+                            <select class="ql-header">
+                                <option value="1">Heading 1</option>
+                                <option value="2">Heading 2</option>
+                                <option value="3">Heading 3</option>
+                                <option selected>Normal</option>
+                            </select>
+                            <select class="ql-size">
+                                <option value="small">Small</option>
+                                <option selected>Normal</option>
+                                <option value="large">Large</option>
+                                <option value="huge">Huge</option>
+                            </select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-bold" title="Chữ đậm"></button>
+                            <button class="ql-italic" title="In nghiêng"></button>
+                            <button class="ql-underline" title="Gạch chân"></button>
+                            <button class="ql-strike" title="Gạch ngang"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color" title="Màu chữ"></select>
+                            <select class="ql-background" title="Màu nền"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered" title="Danh sách số"></button>
+                            <button class="ql-list" value="bullet" title="Danh sách chấm"></button>
+                            <select class="ql-align" title="Căn lề"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link" title="Chèn liên kết"></button>
+                            <button class="ql-image" title="Chèn hình ảnh"></button>
+                            <button type="button" id="btnUrlImage" class="btn-custom-toolbar" title="Chèn ảnh bằng URL">URL Image</button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-clean" title="Xóa định dạng"></button>
+                        </span>
+                    </div>
+                    <div id="summaryEditor" style="min-height: 220px; background: #ffffff; font-size: 15px;"></div>
+                </div>
+            </div>
+
+            <div class="col-12 form-actions">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-lg" type="submit" th:text="${formMode}">Save</button>
+                    <a class="btn btn-outline-secondary btn-lg" th:href="@{/tour/admin}">Cancel</a>
+                </div>
+                <div class="cloud-storage-callout">
+                    <div class="cloud-save-row">
+                        <div class="cloud-save-btn">
+                            <svg viewBox="0 0 24 24" role="img">
+                                <path d="M12 16V8m0 0-3.2 3.2M12 8l3.2 3.2M20 16.5a4.2 4.2 0 0 0-3.9-5.7A6 6 0 0 0 4.5 12.2 3.8 3.8 0 0 0 5.8 19h12.4a3.1 3.1 0 0 0 1.8-2.5Z"/>
+                            </svg>
+                            L&#432;u tr&#7919; &#7843;nh tr&#234;n cloud
+                        </div>
+                        <span class="cloud-check" aria-label="Cloud storage ready">
+                            <svg viewBox="0 0 24 24" role="img">
+                                <path d="m7 12 3 3 7-7"/>
+                            </svg>
+                        </span>
+                    </div>
+                    <small id="cloudStatus" class="cloud-status">L&#432;u &#7843;nh l&#234;n Cloud &#273;&#7875; &#273;&#7843;m b&#7843;o an to&#224;n v&#224; truy c&#7853;p t&#7915; m&#7885;i n&#417;i</small>
+                </div>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+    const preview = document.getElementById('tourImagePreview');
+    const imageUrl = document.getElementById('imageUrl');
+    const imageFile = document.getElementById('imageFile');
+    const cloudStatus = document.getElementById('cloudStatus');
+    const imageRemove = document.querySelector('.image-remove');
+    const imageManager = document.querySelector('.image-manager');
+    const previewCard = document.querySelector('.image-preview-card');
+
+    imageUrl.addEventListener('input', () => {
+        if (imageUrl.value.trim()) {
+            preview.src = imageUrl.value.trim();
+            preview.classList.remove('d-none');
+            imageRemove.classList.remove('d-none');
+            previewCard.classList.remove('d-none');
+            imageManager.classList.add('has-image');
+        }
+    });
+
+    imageFile.addEventListener('change', () => {
+        const file = imageFile.files && imageFile.files[0];
+        if (!file) {
+            return;
+        }
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('d-none');
+        imageRemove.classList.remove('d-none');
+        previewCard.classList.remove('d-none');
+        imageManager.classList.add('has-image');
+        cloudStatus.textContent = '\u1ea2nh \u0111\u00e3 s\u1eb5n s\u00e0ng. B\u1ea5m Create/Update \u0111\u1ec3 upload l\u00ean Cloudflare R2.';
+    });
+
+    imageRemove.addEventListener('click', (event) => {
+        event.preventDefault();
+        imageUrl.value = '';
+        imageFile.value = '';
+        preview.src = '';
+        preview.classList.add('d-none');
+        imageRemove.classList.add('d-none');
+        previewCard.classList.add('d-none');
+        imageManager.classList.remove('has-image');
+        cloudStatus.textContent = '\u0110\u00e3 x\u00f3a \u1ea3nh kh\u1ecfi form.';
+    });
+
+    // Initialize Quill Rich Text Editor
+    const summaryInput = document.getElementById('summaryInput');
+    const quill = new Quill('#summaryEditor', {
+        modules: {
+            toolbar: '#quillToolbar'
+        },
+        theme: 'snow',
+        placeholder: 'Nhập mô tả sản phẩm / tour tại đây (Hỗ trợ định dạng chữ đậm, in nghiêng, màu sắc, font chữ và chèn ảnh Base64/URL)...'
+    });
+
+    // Load initial HTML from input if available
+    if (summaryInput.value) {
+        quill.root.innerHTML = summaryInput.value;
+    }
+
+    // Custom URL Image button click
+    const btnUrlImage = document.getElementById('btnUrlImage');
+    if (btnUrlImage) {
+        btnUrlImage.addEventListener('click', () => {
+            const url = prompt('Nhập đường dẫn URL hình ảnh (http://... hoặc https://...):');
+            if (url) {
+                const range = quill.getSelection(true);
+                quill.insertEmbed(range.index, 'image', url);
+            }
+        });
+    }
+
+    // Sync Quill HTML content to hidden input
+    const form = document.getElementById('tourForm');
+    form.addEventListener('submit', () => {
+        summaryInput.value = quill.root.innerHTML;
+    });
+
+    quill.on('text-change', () => {
+        summaryInput.value = quill.root.innerHTML;
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

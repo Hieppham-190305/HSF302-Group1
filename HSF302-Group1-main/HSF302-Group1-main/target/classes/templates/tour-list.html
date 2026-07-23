@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tours</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark topbar sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">Dieu Dao Travel</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link active" th:href="@{/tour}">Tours</a>
+            <a class="nav-link" th:href="@{/tour/blog}">Blog</a>
+            <a class="nav-link" th:href="@{/tour(chat=1)}">AI Chat</a>
+            <a class="btn btn-outline-light btn-sm ms-lg-2" th:href="@{/logout}">Dang xuat</a>
+        </div>
+    </div>
+</nav>
+
+<main class="tour-page">
+    <section class="container tour-hero">
+        <div class="hero-copy">
+            <span class="tour-tag">Discover Vietnam</span>
+            <h1>Choose a tour package</h1>
+            <p>Each card leads to a detail page and booking flow.</p>
+        </div>
+        <a class="btn btn-ai" th:href="@{/tour(chat=1)}">Open AI chat</a>
+    </section>
+
+    <section class="container tour-grid">
+        <article class="tour-card" th:each="tour : ${tours}">
+            <div class="tour-image"
+                 th:style="${tour.imageUrl() != null && !tour.imageUrl().isBlank() ? 'background-image: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.22)), url(' + tour.imageUrl() + ')' : ''}">
+                <span class="rating-pill" th:text="${tour.rating()}">4.9</span>
+            </div>
+            <div class="tour-card-body">
+                <span class="location-pill" th:text="${tour.location()}">Sapa, Vietnam</span>
+                <h2 th:text="${tour.name()}">Sapa 3N2D</h2>
+                <div class="tour-card-summary rich-content ql-editor" th:utext="${tour.summary()}">Mountain views, local market, and cable car.</div>
+                <div class="tour-card-footer">
+                    <div class="price" th:text="${'$' + tour.price()}">$429</div>
+                    <a class="btn btn-outline-tour" th:href="@{'/tour/detail/' + ${tour.id()}}">View details <span>&gt;</span></a>
+                </div>
+            </div>
+        </article>
+    </section>
+</main>
+
+<div class="modal fade" id="chatModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable chat-modal-dialog">
+        <div class="modal-content chat-modal">
+            <div class="modal-header chat-modal-header">
+                <div class="chat-modal-title">
+                    <div class="chat-avatar">AI</div>
+                    <div>
+                        <h2 class="modal-title">Tour assistant</h2>
+                        <p>Ask me anything about tours!</p>
+                    </div>
+                </div>
+                <div class="chat-modal-actions">
+                    <button class="icon-btn" type="button" aria-label="Refresh">R</button>
+                    <button class="icon-btn" type="button" data-bs-dismiss="modal" aria-label="Close">x</button>
+                </div>
+            </div>
+            <div class="modal-body chat-modal-body">
+                <div class="chat-grid">
+                    <section class="chat-thread">
+                        <div class="chat-row user">
+                            <div class="chat-bubble chat-bubble-user">
+                                <div>Tour Sapa co gi?</div>
+                                <div class="chat-time">10:30 AM</div>
+                            </div>
+                        </div>
+                        <div class="chat-row assistant">
+                            <div class="chat-avatar small">AI</div>
+                            <div class="chat-bubble chat-bubble-assistant">
+                                <div>Sapa 3N2D co mountain views, local market, va cable car.</div>
+                                <div class="chat-time">10:30 AM</div>
+                            </div>
+                        </div>
+                        <div class="chat-row user">
+                            <div class="chat-bubble chat-bubble-user">
+                                <div>Tour nao cao cap nhat?</div>
+                                <div class="chat-time">10:31 AM</div>
+                            </div>
+                        </div>
+                        <div class="chat-row assistant">
+                            <div class="chat-avatar small">AI</div>
+                            <div class="chat-bubble chat-bubble-assistant">
+                                <div>Phu Quoc Escape la tour gia cao nhat trong dataset demo nay.</div>
+                                <div class="chat-time">10:31 AM</div>
+                            </div>
+                        </div>
+                    </section>
+                    <aside class="chat-sidebar">
+                        <div class="chat-side-card">
+                            <div class="chat-side-title">Knowledge base</div>
+                            <ul class="kb-list chat-kb-list mb-0">
+                                <li th:each="item : ${knowledgeBase}">
+                                    <div class="kb-thumb"></div>
+                                    <div class="kb-copy">
+                                        <div class="kb-name" th:text="${item.split(' - ')[0]}">Tour</div>
+                                        <div class="kb-price" th:text="${item.split(' - ')[1]}">429 USD</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="chat-side-card note-card">
+                            <div class="chat-side-head">
+                                <h3>RAG demo note</h3>
+                                <span class="note-icon">i</span>
+                            </div>
+                            <p>Answers are intentionally scoped to the in-app tour list for the demo.</p>
+                        </div>
+                    </aside>
+                </div>
+                <div class="chat-input-shell">
+                    <button class="attach-btn" type="button" aria-label="Attach">+</button>
+                    <div class="chat-input-box">
+                        <input class="chat-input" value="Ask about tours in the app..." disabled>
+                        <div class="chat-counter">0/1000</div>
+                    </div>
+                    <button class="send-btn" type="button" aria-label="Send">&gt;</button>
+                </div>
+                <div class="chat-footer-note">AI answers may not be 100% accurate. Please verify important details.</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    const openChat = [[${param.chat != null}]];
+    if (openChat) {
+        window.addEventListener('load', () => {
+            const modal = new bootstrap.Modal(document.getElementById('chatModal'));
+            modal.show();
+        });
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

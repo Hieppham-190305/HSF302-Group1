@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Travel Blog Editor - RichText</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark topbar sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" th:href="@{/}">Dieu Dao Travel</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" th:href="@{/tour}">Tours</a>
+            <a class="nav-link active" th:href="@{/tour/blog}">Blog</a>
+            <a class="nav-link" th:href="@{/tour(chat=1)}">AI Chat</a>
+            <a class="btn btn-outline-light btn-sm ms-lg-2" th:href="@{/logout}">Đăng xuất</a>
+        </div>
+    </div>
+</nav>
+
+<main class="blog-editor-page">
+    <div class="container">
+        <div class="blog-editor-shell">
+            <section class="blog-panel">
+                <div class="blog-panel-head">
+                    <div>
+                        <h1 class="blog-panel-title">Blog &amp; Description Editor</h1>
+                    </div>
+                    <span class="status-pill" id="editorStatus">HTML / RichText Live Editor</span>
+                </div>
+
+                <div class="quill-wrapper">
+                    <div id="blogToolbar">
+                        <span class="ql-formats">
+                            <select class="ql-header">
+                                <option value="1">Heading 1</option>
+                                <option value="2">Heading 2</option>
+                                <option value="3">Heading 3</option>
+                                <option selected>Normal</option>
+                            </select>
+                            <select class="ql-size">
+                                <option value="small">Nhỏ (Small)</option>
+                                <option selected>Vừa (Normal)</option>
+                                <option value="large">Lớn (Large)</option>
+                                <option value="huge">Rất lớn (Huge)</option>
+                            </select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-bold" title="Chữ đậm (Bold)"></button>
+                            <button class="ql-italic" title="In nghiêng (Italic)"></button>
+                            <button class="ql-underline" title="Gạch chân"></button>
+                            <button class="ql-strike" title="Gạch ngang"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color" title="Màu chữ"></select>
+                            <select class="ql-background" title="Màu nền"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered" title="Danh sách số"></button>
+                            <button class="ql-list" value="bullet" title="Danh sách chấm"></button>
+                            <select class="ql-align" title="Căn lề"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link" title="Chèn đường dẫn"></button>
+                            <button class="ql-image" title="Tải ảnh lên (Base64)"></button>
+                            <button type="button" id="btnBlogUrlImage" class="btn-custom-toolbar" title="Chèn ảnh bằng URL">URL Image</button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-clean" title="Xóa định dạng"></button>
+                        </span>
+                    </div>
+                    <div id="blogEditor" style="min-height: 320px; background: #fff; font-size: 16px;"></div>
+                </div>
+
+                <div class="editor-footnote d-flex align-items-center justify-content-between mt-3">
+                    <div>
+                        <button type="button" id="btnSaveBlog" class="btn btn-sm btn-success fw-bold me-2">Save RichText</button>
+                        <button type="button" id="btnResetBlog" class="btn btn-sm btn-outline-secondary">Reset Sample</button>
+                    </div>
+                    <span id="saveStatus" class="text-success fw-semibold small d-none">✓ RichText saved to browser storage!</span>
+                </div>
+            </section>
+
+            <section class="blog-panel">
+                <div class="blog-panel-head">
+                    <div>
+                        <h2 class="blog-panel-title">Rendered Web Preview</h2>
+                    </div>
+                    <span class="status-pill status-pill-soft">Live HTML Output</span>
+                </div>
+
+                <article class="preview-card">
+                    <div id="previewContent" class="rich-content ql-editor">
+                        <!-- Rendered HTML will update here dynamically -->
+                    </div>
+
+                    <div class="preview-note mt-4">
+                        <div class="preview-note-title">⚡ Feature Highlight (RichText Engine):</div>
+                        <div class="preview-note-text">
+                            <ul>
+                                <li><strong>Định dạng chữ:</strong> Đậm (Bold), In nghiêng (Italic), Màu sắc, Kích thước (Small, Normal, Large, Huge).</li>
+                                <li><strong>Hình ảnh xen kẽ:</strong> Hỗ trợ tải ảnh local (tự động chuyển đổi dạng <code>Base64</code>) và chèn đường dẫn <code>URL Image</code> nhúng.</li>
+                                <li><strong>Lưu trữ &amp; Tái render:</strong> Nội dung RichText HTML được lưu lại và hiển thị chính xác như trên website khi tải lại trang.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script>
+    const DEFAULT_BLOG_HTML = `
+        <h2 style="color: #0f8b5f;">Cẩm nang du lịch Sapa 3N2Đ</h2>
+        <p><strong>Sapa là một trong những điểm đến vùng cao tuyệt đẹp ở phía Bắc Việt Nam.</strong></p>
+        <p><em>Nơi những dãy núi chạm tới mây xanh và văn hóa bản địa độc đáo hòa quyện.</em></p>
+        <p><span style="color: #e67e22; font-size: 18px;">★ Không thể bỏ qua:</span> Breathtaking views of <span style="background-color: #fcf8e3;">rice terraces and local villages!</span></p>
+        <p><img src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80" alt="Sapa landscape" style="max-width: 100%; border-radius: 8px; margin: 10px 0;" /></p>
+        <p>Từ những chuyến leo núi chinh phục đỉnh <strong>Fansipan</strong> đến trải nghiệm mua sắm tại <em>chợ phiên vùng cao</em>, Sapa hứa hẹn mang tới những kỷ niệm không thể nào quên.</p>
+    `;
+
+    const blogEditorElem = document.getElementById('blogEditor');
+    const previewContent = document.getElementById('previewContent');
+    const saveStatus = document.getElementById('saveStatus');
+    const btnSaveBlog = document.getElementById('btnSaveBlog');
+    const btnResetBlog = document.getElementById('btnResetBlog');
+    const btnBlogUrlImage = document.getElementById('btnBlogUrlImage');
+
+    const quill = new Quill('#blogEditor', {
+        modules: {
+            toolbar: '#blogToolbar'
+        },
+        theme: 'snow',
+        placeholder: 'Soạn thảo bài viết hoặc mô tả tour với hình ảnh, màu sắc và định dạng chữ...'
+    });
+
+    // Custom URL Image Handler
+    if (btnBlogUrlImage) {
+        btnBlogUrlImage.addEventListener('click', () => {
+            const url = prompt('Nhập đường dẫn URL hình ảnh nhúng (http://... hoặc https://...):');
+            if (url) {
+                const range = quill.getSelection(true);
+                quill.insertEmbed(range.index, 'image', url);
+            }
+        });
+    }
+
+    // Load saved HTML or default content
+    const savedHtml = localStorage.getItem('rich_blog_content');
+    if (savedHtml) {
+        quill.root.innerHTML = savedHtml;
+    } else {
+        quill.root.innerHTML = DEFAULT_BLOG_HTML;
+    }
+    updatePreview();
+
+    function updatePreview() {
+        previewContent.innerHTML = quill.root.innerHTML;
+    }
+
+    quill.on('text-change', () => {
+        updatePreview();
+        saveStatus.classList.add('d-none');
+    });
+
+    btnSaveBlog.addEventListener('click', () => {
+        localStorage.setItem('rich_blog_content', quill.root.innerHTML);
+        saveStatus.classList.remove('d-none');
+        setTimeout(() => saveStatus.classList.add('d-none'), 3000);
+    });
+
+    btnResetBlog.addEventListener('click', () => {
+        quill.root.innerHTML = DEFAULT_BLOG_HTML;
+        localStorage.removeItem('rich_blog_content');
+        updatePreview();
+        saveStatus.classList.add('d-none');
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
